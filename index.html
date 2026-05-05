@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps&SRE </title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0e14;
+      --surface:  #111520;
+      --border:   #1e2535;
+      --accent:   #00e5a0;
+      --accent2:  #0077ff;
+      --text:     #e8ecf4;
+      --muted:    #6b7694;
+      --card:     #141926;
+      --tag-bg:   #0d1628;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* NOISE TEXTURE */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(11,14,20,.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.1rem;
+      letter-spacing: .08em;
+      color: var(--accent);
+    }
+    .nav-links { display: flex; gap: 2.4rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      font-size: .85rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+    }
+    .glow-1 { width: 600px; height: 600px; background: rgba(0,229,160,.07); top: -100px; left: -200px; }
+    .glow-2 { width: 500px; height: 500px; background: rgba(0,119,255,.06); bottom: -100px; right: -150px; }
+
+    .hero-inner {
+      position: relative; z-index: 1;
+      max-width: 900px; width: 100%;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--accent); border: 1px solid rgba(0,229,160,.25);
+      background: rgba(0,229,160,.06);
+      padding: .4rem 1rem; border-radius: 99px;
+      margin-bottom: 1.6rem;
+      animation: fadeUp .6s ease both;
+    }
+    .hero-badge::before { content: '▶'; font-size: .5rem; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 800;
+      line-height: .95;
+      letter-spacing: -.03em;
+      animation: fadeUp .7s .1s ease both;
+    }
+    h1 .accent { color: var(--accent); }
+    h1 .dim { color: var(--muted); }
+
+    .hero-sub {
+      margin-top: 1.8rem;
+      font-size: 1.1rem; color: var(--muted);
+      max-width: 560px;
+      animation: fadeUp .7s .2s ease both;
+    }
+
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-top: 2.4rem;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .75rem 1.8rem; border-radius: 8px;
+      font-size: .9rem; font-weight: 500; text-decoration: none;
+      transition: all .2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #00ffb3; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,160,.3); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hero-stats {
+      display: flex; gap: 3rem; flex-wrap: wrap;
+      margin-top: 4rem;
+      padding-top: 2rem; border-top: 1px solid var(--border);
+      animation: fadeUp .7s .4s ease both;
+    }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem; font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+
+    /* ── SECTIONS ── */
+    section { padding: 5rem 4rem; }
+    .section-label {
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--accent); text-transform: uppercase; letter-spacing: .15em;
+      margin-bottom: .6rem;
+    }
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800; line-height: 1.1;
+      margin-bottom: 2.5rem;
+    }
+    .max-w { max-width: 1100px; margin: 0 auto; }
+
+    /* ── SKILLS ── */
+    #skills { background: var(--surface); }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+    .skill-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem 1.6rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .skill-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .skill-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--accent); margin-bottom: .8rem;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .tag {
+      font-family: 'DM Mono', monospace; font-size: .72rem;
+      background: var(--tag-bg); color: var(--muted);
+      border: 1px solid var(--border);
+      padding: .25rem .7rem; border-radius: 6px;
+      transition: all .15s;
+    }
+    .tag:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ── EXPERIENCE ── */
+    .exp-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 2.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .exp-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+    }
+    .exp-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .exp-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .exp-company { color: var(--accent); font-size: .9rem; margin-top: .2rem; }
+    .exp-period {
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--muted); background: var(--tag-bg);
+      border: 1px solid var(--border);
+      padding: .3rem .9rem; border-radius: 99px; white-space: nowrap;
+    }
+    .exp-section { margin-top: 1.2rem; }
+    .exp-section-title { font-size: .8rem; font-weight: 500; color: var(--accent2); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; }
+    .exp-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+    .exp-list li { font-size: .9rem; color: var(--muted); padding-left: 1rem; position: relative; }
+    .exp-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: .7rem; top: .1rem; }
+    .exp-tech { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1.4rem; }
+
+    /* ── PROJECTS ── */
+    #projects { background: var(--surface); }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.4rem;
+    }
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem 2rem;
+      transition: all .25s;
+      position: relative; overflow: hidden;
+    }
+    .project-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,160,.03), rgba(0,119,255,.03));
+      opacity: 0; transition: opacity .25s;
+    }
+    .project-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+    .project-card:hover::after { opacity: 1; }
+    .project-icon {
+      font-size: 2rem; margin-bottom: 1rem;
+    }
+    .project-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+    .project-desc { font-size: .88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.2rem; }
+    .project-impact {
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--accent); background: rgba(0,229,160,.06);
+      border: 1px solid rgba(0,229,160,.15);
+      padding: .4rem .8rem; border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    .project-tech { display: flex; flex-wrap: wrap; gap: .35rem; }
+
+    /* ── EDUCATION ── */
+    .edu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .edu-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.6rem;
+      transition: border-color .2s;
+    }
+    .edu-card:hover { border-color: var(--accent2); }
+    .edu-year {
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--accent2); margin-bottom: .5rem;
+    }
+    .edu-degree { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+    .edu-school { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+    .edu-mention {
+      display: inline-block; margin-top: .8rem;
+      font-size: .75rem; color: var(--accent);
+      background: rgba(0,229,160,.06); border: 1px solid rgba(0,229,160,.2);
+      padding: .2rem .7rem; border-radius: 99px;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      text-align: center;
+      background: var(--surface);
+      position: relative; overflow: hidden;
+    }
+    #contact::before {
+      content: '';
+      position: absolute; width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,160,.05) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    .contact-inner { position: relative; z-index: 1; }
+    .contact-email {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 800; color: var(--accent);
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .contact-email:hover { opacity: .7; }
+    .contact-links { display: flex; justify-content: center; gap: 1rem; margin-top: 1.6rem; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem 4rem;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace; font-size: .75rem;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      #hero, section { padding: 5rem 1.5rem 3rem; }
+      .hero-stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">SIM<span style="color:var(--muted)">ON.</span></div>
+  <ul class="nav-links">
+    <li><a href="#skills">Compétences</a></li>
+    <li><a href="#experience">Expérience</a></li>
+    <li><a href="#projects">Projets</a></li>
+    <li><a href="#education">Formation</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow glow-1"></div>
+  <div class="hero-glow glow-2"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">Disponible pour de nouvelles opportunités</div>
+    <h1>Simon<br/><span class="accent">Consultant DevOps</span> &amp;<br/><span class="dim">SRE</span></h1>
+    <p class="hero-sub">Ingénieur DevOps avec plus de 5 ans d’expérience dans la conception, l’automatisation et la gestion d’infrastructures Cloud et On-Premise.
+Je maîtrise des technologies telles que Kubernetes, AWS, Terraform, Ansible et GitLab CI/CD, et j’accompagne les entreprises dans l’amélioration de la fiabilité, de la rapidité et de la sécurité de leurs déploiements applicatifs.
+Capable de réduire les délais de mise en production, d’optimiser les coûts Cloud et de renforcer la résilience des systèmes.</p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">Voir mes projets →</a>
+      <a href="#contact" class="btn btn-ghost">Me contacter</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">5+</div>
+        <div class="stat-label">Ans d'expérience</div>
+      </div>
+      <div>
+        <div class="stat-num">95M</div>
+        <div class="stat-label">Clients impactés</div>
+      </div>
+      <div>
+        <div class="stat-num">20+</div>
+        <div class="stat-label">Technologies maîtrisées</div>
+      </div>
+      <div>
+        <div class="stat-num">3</div>
+        <div class="stat-label">Clouds déployés</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="max-w">
+    
+    <h2 class="reveal">Compétences</h2>
+    <div class="skills-grid">
+      <div class="skill-card reveal">
+        <div class="skill-card-title">☁️ Cloud & Infrastructure</div>
+        <div class="skill-tags">
+          <span class="tag">AWS EC2</span><span class="tag">EKS</span><span class="tag">Lambda</span><span class="tag">ECS</span>
+          <span class="tag">S3</span><span class="tag">IAM</span><span class="tag">VPC</span>
+          <span class="tag">Azure</span><span class="tag">On-Premises</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">🐳 Conteneurisation & Orchestration</div>
+        <div class="skill-tags">
+          <span class="tag">Docker</span><span class="tag">Kubernetes</span><span class="tag">Helm</span>
+          <span class="tag">OpenShift</span><span class="tag">Rancher</span><span class="tag">Harbor</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">🔄 CI/CD & Automatisation</div>
+        <div class="skill-tags">
+          <span class="tag">Jenkins</span><span class="tag">GitLab CI/CD</span><span class="tag">ArgoCD</span>
+          <span class="tag">Ansible</span><span class="tag">Terraform</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">📊 DataOps & Pipelines</div>
+        <div class="skill-tags">
+          <span class="tag">Apache Airflow</span><span class="tag">Apache NiFi</span><span class="tag">Talend TAC</span>
+          <span class="tag">BigQuery</span><span class="tag">BigTable</span><span class="tag">ELK Stack</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">📈 Logging & Monitoring </div>
+        <div class="skill-tags">
+          <span class="tag">Prometheus</span><span class="tag">Grafana</span><span class="tag">WhatsUp Gold</span>
+          <span class="tag">ELK</span><span class="tag">Graylog</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">🔐 Sécurité & Qualité</div>
+        <div class="skill-tags">
+          <span class="tag">HashiCorp Vault</span><span class="tag">SonarQube</span>
+          <span class="tag">GitLab SAST</span><span class="tag">SSL/TLS</span><span class="tag">Trivy</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">⚙️ Langages & Scripting</div>
+        <div class="skill-tags">
+          <span class="tag">Bash</span><span class="tag">Shell</span><span class="tag">Python</span>
+          <span class="tag">Go</span><span class="tag">Groovy</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-card-title">🖥️ Serveurs & Bases de données</div>
+        <div class="skill-tags">
+          <span class="tag">NGINX</span><span class="tag">Apache HTTPD</span><span class="tag">JBoss</span></span><span class="tag">WildFly</span><span class="tag">Tomcat</span>
+          <span class="tag">MySQL</span><span class="tag">PostgreSQL</span><span class="tag">MariaDB</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="max-w">
+
+    <h2 class="reveal">Expérience</h2>
+    <div class="exp-card reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-title">Ingénieur de Production DevOps</div>
+          <div class="exp-company">YAS — Opérateur Télécom N°1 Madagascar & Afrique</div>
+        </div>
+        <div class="exp-period">Juil. 2021 → Mars 2026</div>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:1rem;">YAS dessert 95 millions de clients à travers l'Afrique. Intervention sur l'ensemble du cycle de vie applicatif dans un contexte d'industrialisation des processus IT à grande échelle.</p>
+
+      <div class="exp-section">
+        <div class="exp-section-title">🚀 Mise en production & Exploitation</div>
+        <ul class="exp-list">
+          <li>Étude et analyse des besoins en exploitation et industrialisation des SI</li>
+          <li>Définition et diffusion des procédures de mise en production</li>
+          <li>Supervision des mises en production : tests, recettage, industrialisation</li>
+          <li>Accompagnement des équipes MOE en pré-production et production</li>
+          <li>MCO des moyens techniques dans le respect des normes de performance</li>
+        </ul>
+      </div>
+
+      <div class="exp-section">
+        <div class="exp-section-title">🛡️ Supervision, Incidents & Support N3</div>
+        <ul class="exp-list">
+          <li>Analyse et gestion des incidents : diagnostic, rollback, maintenance corrective</li>
+          <li>Support de niveau 3 pour les incidents complexes</li>
+          <li>Surveillance en temps réel des systèmes et des applications</li>
+          <li>Évolution des outils et traitement des obsolescences techniques</li>
+        </ul>
+      </div>
+
+      <div class="exp-section">
+        <div class="exp-section-title">🔄 DevSecOps & CI/CD</div>
+        <ul class="exp-list">
+          <li>Création de pipelines CI/CD multi-technologies (Java, Python, Node.js) avec Jenkins et GitLab CI, optimisés Kubernetes</li>
+          <li>Gestion et administration des clusters Kubernetes : déploiement, scaling, supervision des conteneurs Docker</li>
+          <li>Maintenance et amélioration des scripts d'automatisation Ansible</li>
+          <li>Gestion des certificats SSL et mise en œuvre HashiCorp Vault</li>
+          <li>Participation à la définition du Plan de Reprise d'Activité (PRA)</li>
+        </ul>
+      </div>
+
+      <div class="exp-section">
+        <div class="exp-section-title">📊 Intégration & DataOps</div>
+        <ul class="exp-list">
+          <li>Conception et déploiement d’un cluster Apache NiFi sur Kubernetes permettant l’orchestration scalable de flux de données multi-sources avec transformation et enrichissement en temps réel</li>
+          <li>Conception de pipelines NiFi pour l'extraction et la transformation de données</li>
+          <li>Déploiement et gestion des services Talend Administration Center (TAC)</li>
+        </ul>
+      </div>
+
+      <div class="exp-tech">
+        <span class="tag">OpenShift</span><span class="tag">RHEL</span><span class="tag">HAProxy</span><span class="tag">NGINX</span>
+        <span class="tag">WildFly</span><span class="tag">Nexus</span><span class="tag">Docker</span><span class="tag">Kubernetes</span>
+        <span class="tag">AWS</span><span class="tag">Airflow</span><span class="tag">NiFi</span><span class="tag">Talend</span>
+        <span class="tag">Vault</span><span class="tag">Ansible</span><span class="tag">Jenkins</span><span class="tag">GitLab CI</span>
+        <span class="tag">Prometheus</span><span class="tag">Grafana</span><span class="tag">ELK</span><span class="tag">Trivy</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="max-w">
+    
+    <h2 class="reveal">Projets Réalisés</h2>
+    <div class="projects-grid">
+
+      <div class="project-card reveal">
+        <div class="project-icon">🔄</div>
+        <div class="project-title">Plateforme CI/CD Multi-Stack</div>
+        <div class="project-desc">Architecture et déploiement d'une plateforme CI/CD unifiée couvrant les stacks Java, Python et Node.js, intégrée avec Kubernetes pour des déploiements blue/green automatisés.</div>
+        <div class="project-impact">⚡ Réduction du temps de déploiement de ~70%</div>
+        <div class="project-tech">
+          <span class="tag">Jenkins</span><span class="tag">GitLab CI</span><span class="tag">ArgoCD</span><span class="tag">Kubernetes</span><span class="tag">Helm</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-icon">📡</div>
+        <div class="project-title">Cluster Apache NiFi on Kubernetes</div>
+        <div class="project-desc">Déploiement et opération d'un cluster NiFi hautement disponible sur Kubernetes pour la collecte, le nettoyage et l'enrichissement en temps réel des logs applicatifs de millions d'utilisateurs.</div>
+        <div class="project-impact">📊 Traitement de millions d'événements/jour</div>
+        <div class="project-tech">
+          <span class="tag">Apache NiFi</span><span class="tag">Kubernetes</span><span class="tag">Helm</span><span class="tag">ELK Stack</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-icon">🔐</div>
+        <div class="project-title">Gestion Secrets & PKI d'Entreprise</div>
+        <div class="project-desc">Mise en place d'une infrastructure centralisée de gestion des secrets et des certificats SSL avec HashiCorp Vault, couplée à des politiques de sécurité automatisées pour l'ensemble du parc applicatif.</div>
+        <div class="project-impact">🛡️ Zéro exposition de secrets en production</div>
+        <div class="project-tech">
+          <span class="tag">HashiCorp Vault</span><span class="tag">TLS/SSL</span><span class="tag">Ansible</span><span class="tag">SonarQube</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-icon">📈</div>
+        <div class="project-title">Stack de Monitoring Full-Observability</div>
+        <div class="project-desc">Conception et déploiement d'une plateforme d'observabilité complète (métriques, logs, alerting) avec tableaux de bord personnalisés pour surveiller l'infrastructure télécom en temps réel.</div>
+        <div class="project-impact">⏱️ MTTR réduit de 60% grâce aux alertes proactives</div>
+        <div class="project-tech">
+          <span class="tag">Prometheus</span><span class="tag">Grafana</span><span class="tag">ELK Stack</span><span class="tag">WhatsUp Gold</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-icon">☁️</div>
+        <div class="project-title">Migration Infrastructure AWS</div>
+        <div class="project-desc">Planification et exécution de la migration d'applications critiques vers AWS avec déploiement IaC via Terraform et Ansible, garantissant zéro interruption de service pour les clients.</div>
+        <div class="project-impact">🚀 99.9% uptime maintenu durant la migration</div>
+        <div class="project-tech">
+          <span class="tag">AWS</span><span class="tag">Terraform</span><span class="tag">Ansible</span><span class="tag">EKS</span><span class="tag">EC2</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-icon">🔧</div>
+        <div class="project-title">Plan de Reprise d'Activité (PRA)</div>
+        <div class="project-desc">Conception et implémentation du PRA pour les systèmes critiques de l'opérateur télécom, avec tests de basculement automatisés et documentation des procédures de reprise.</div>
+        <div class="project-impact">🎯 RTO < 4h sur l'ensemble des systèmes critiques</div>
+        <div class="project-tech">
+          <span class="tag">Kubernetes</span><span class="tag">AWS</span><span class="tag">Bash</span><span class="tag">Ansible</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="max-w">
+    
+    <h2 class="reveal">Études</h2>
+    <div class="edu-grid">
+      <div class="edu-card reveal">
+        <div class="edu-year">2021</div>
+        <div class="edu-degree">Diplôme d'Ingénieur en Informatique Générale</div>
+        <div class="edu-school">École Nationale d'Informatique (ENI) — Sciences de l'Ingénieur</div>
+        <span class="edu-mention">🏆 Mention Très Bien</span>
+      </div>
+      <div class="edu-card reveal">
+        <div class="edu-year">2019</div>
+        <div class="edu-degree">Licence en Informatique Générale</div>
+        <div class="edu-school">École Nationale d'Informatique (ENI) — Sciences de l'Ingénieur</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="max-w contact-inner">
+    
+    <h2 class="reveal">Travaillons ensemble</h2>
+    <p style="color:var(--muted);max-width:500px;margin:0 auto 2rem;font-size:.95rem;" class="reveal">
+      Ouvert aux opportunités en DevOps/DataOps, Ingénieur de Production, Ingénieur en fiabilité de site (SRE). N'hésitez pas à me contacter.
+    </p>
+    <a href="mailto:simon@email.com" class="contact-email reveal">bonitah.rambeloson@gmail.com</a>
+    <div class="contact-links reveal">
+      <a href="https://www.linkedin.com/in/simon-bonitah-rambeloson-587749a0/" target="_blank" class="btn btn-ghost">LinkedIn</a>
+      <a href="#" class="btn btn-primary">Télécharger CV →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Conçu & développé par Simon © 2026</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
